@@ -1,7 +1,7 @@
 "use client";
 
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 
 // Props type for our MapView component
@@ -9,6 +9,7 @@ interface MapViewProps {
     center: [number, number];
     zoom: number;
     tempoTileUrl: string;
+    onMapClick: (lat: number, lon: number) => void;
 }
 
 // Fix for default Leaflet icon issue with Webpack
@@ -26,11 +27,22 @@ const ChangeView = ({ center, zoom }: { center: [number, number], zoom: number }
     return null;
 };
 
+// A component to handle map click events
+const MapClickHandler = ({ onMapClick }: { onMapClick: (lat: number, lon: number) => void }) => {
+    useMapEvents({
+        click(e) {
+            onMapClick(e.latlng.lat, e.latlng.lng);
+        },
+    });
+    return null;
+};
 
-export default function MapView({ center, zoom, tempoTileUrl }: MapViewProps) {
+
+export default function MapView({ center, zoom, tempoTileUrl, onMapClick }: MapViewProps) {
     return (
         <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }} className="rounded-md">
             <ChangeView center={center} zoom={zoom} />
+            <MapClickHandler onMapClick={onMapClick} />
             <TileLayer
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -42,3 +54,4 @@ export default function MapView({ center, zoom, tempoTileUrl }: MapViewProps) {
         </MapContainer>
     );
 }
+

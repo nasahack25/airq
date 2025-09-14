@@ -1,8 +1,9 @@
 "use client";
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useCallback } from 'react';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
+import LocationSearch from '@/components/LocationSearch';
 
 // Main component for the AirQ application
 export default function AirQHome() {
@@ -15,33 +16,44 @@ export default function AirQHome() {
 
   // Dynamically import the MapView component and disable Server-Side Rendering (SSR)
   const MapView = useMemo(() => dynamic(() => import('../components/MapView'), {
-    ssr: false, // This is the key to fixing the error
+    ssr: false,
     loading: () => <div className="w-full h-full bg-gray-700 flex items-center justify-center"><p>Loading map...</p></div>,
   }), []);
 
 
   const tempoTileUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/TEMPO_L3_NO2_V03_Trop_Col/default/2023-11-01/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`;
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  // Use useCallback to memoize the function
+  const fetchForecast = useCallback(async (lat: number, lon: number) => {
     setLoading(true);
     setError(null);
     setForecast(null);
 
     try {
-      // NOTE: Using hardcoded coordinates for simplicity. 
-      // A real app would use a geocoding API to convert locationName to lat/lon.
-      const coordinates = { lat: mapCenter[0], lon: mapCenter[1] };
-
-      // --- FIX: Reverted to the correct hardcoded URL for your multi-port setup ---
-      const response = await axios.get(`http://localhost:3001/api/forecast?lat=${coordinates.lat}&lon=${coordinates.lon}`);
+      const response = await axios.get(`http://localhost:3001/api/forecast?lat=${lat}&lon=${lon}`);
       setForecast(response.data);
-
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
+  }, []); // Empty dependency array means this function is created only once
+
+  const handleFormSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    fetchForecast(mapCenter[0], mapCenter[1]);
+  };
+
+  const handleLocationSelect = (lat: number, lon: number, name: string) => {
+    setMapCenter([lat, lon]);
+    setLocationName(name);
+    fetchForecast(lat, lon); // Automatically fetch forecast on selection
+  };
+
+  const handleMapClick = async (lat: number, lon: number) => {
+    setMapCenter([lat, lon]);
+    setLocationName(`Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`);
+    fetchForecast(lat, lon); // Automatically fetch forecast on map click
   };
 
   const getAqiColor = (level: string) => {
@@ -65,24 +77,23 @@ export default function AirQHome() {
         <main className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column: Map */}
           <div className="bg-gray-800 p-4 rounded-lg shadow-2xl h-[450px] lg:h-[600px]">
-            <MapView center={mapCenter} zoom={9} tempoTileUrl={tempoTileUrl} />
+            <MapView
+              center={mapCenter}
+              zoom={9}
+              tempoTileUrl={tempoTileUrl}
+              onMapClick={handleMapClick}
+            />
           </div>
 
           {/* Right Column: Controls and Forecast */}
           <div className="flex flex-col gap-8">
             <div className="bg-gray-800 p-6 rounded-lg shadow-2xl">
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleFormSubmit}>
                 <label htmlFor="location" className="block text-sm font-medium text-gray-300 mb-2">
-                  Enter Location (Geocoding not implemented - uses map center)
+                  Search for a location or click on the map
                 </label>
                 <div className="flex gap-4">
-                  <input
-                    id="location"
-                    type="text"
-                    value={locationName}
-                    onChange={(e) => setLocationName(e.target.value)}
-                    className="flex-grow bg-gray-700 text-white rounded-md px-4 py-2 border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
+                  <LocationSearch onLocationSelect={handleLocationSelect} />
                   <button
                     type="submit"
                     disabled={loading}
@@ -95,10 +106,9 @@ export default function AirQHome() {
             </div>
 
             <div className="bg-gray-800 p-6 rounded-lg shadow-2xl flex-grow">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-300">Forecast Details</h2>
+              <h2 className="text-2xl font-semibold mb-4 text-gray-300">Forecast Details for {locationName}</h2>
               {loading && <p>Loading forecast...</p>}
               {error && <div className="text-red-400">{error}</div>}
-              {/* FIX: Added more robust checks to prevent crashes if the response is malformed */}
               {forecast && forecast.current && forecast.forecast?.three_hour && (
                 <div className="space-y-4">
                   <div>
