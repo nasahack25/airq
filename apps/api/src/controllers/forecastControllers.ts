@@ -10,32 +10,33 @@ import axios from 'axios';
  */
 
 export const getForecast = async (req: Request, res: Response) => {
-    const { lat, lon } = req.query;
-
-    if (!lat || !lon) {
-        return res.status(400).json({ error: 'Latitude and longitude are required.' });
+    if (!FORECAST_SERVICE_URL) {
+        res.status(500).json({ error: 'Forecast service URL is not configured.' });
+        return;
     }
 
-    console.log(`Received request for forecast at lat: ${lat}, lon: ${lon}`);
+    const { lat, lon } = req.query;
+    if (!lat || !lon) {
+        res.status(400).json({ error: 'Latitude and longitude are required.' });
+        return;
+    }
+
+    console.log(`Forwarding request to Python service for lat: ${lat}, lon: ${lon}`);
 
     try {
-        // Forward the request to the Python microservice
         const forecastResponse = await axios.get(FORECAST_SERVICE_URL, {
             params: { lat, lon },
+            timeout: 30000 // 30 second timeout for the model to run
         });
 
-        console.log('Successfully received response from Python service.');
-
-        // Return the response from the Python service to the client
         res.json(forecastResponse.data);
 
     } catch (error: any) {
         console.error('Error contacting Python forecasting service:', error.message);
         if (error.code === 'ECONNREFUSED') {
-            return res.status(503).json({
-                error: 'Forecasting service is currently unavailable. Please ensure the Python service is running.'
-            });
+            res.status(503).json({ error: 'Forecasting service is currently unavailable.' });
+            return;
         }
-        res.status(500).json({ error: 'An internal error occurred while generating the forecast.' });
+        res.status(500).json({ error: 'An error occurred while generating the forecast.' });
     }
 }

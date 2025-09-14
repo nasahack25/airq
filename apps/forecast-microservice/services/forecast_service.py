@@ -1,31 +1,35 @@
-import time
-import random
 from utils import api_clients
+from utils import advection_model
 
-def run_advection_model(lat: float, lon: float):
+def get_air_quality_forecast(lat: float, lon: float):
     """
-    This is the core "brain" of our application.
-    
-    For this hackathon starter, it simulates the process.
-    Your goal is to replace the mock data generation with real logic.
+    The core service that orchestrates the forecast generation.
     """
-    print(f"Service layer: Simulating forecast for lat={lat}, lon={lon}...")
-    
-    # --- TODO: REPLACE MOCK DATA WITH REAL API CALLS AND ALGORITHM ---
-    # 1. Fetch real data using the utility clients
-    # current_air_data = api_clients.get_airnow_data(lat, lon)
-    # wind_data_grid = api_clients.get_nws_wind_forecast(lat, lon)
-    # tempo_data_grid = api_clients.get_tempo_data(lat, lon)
+    print("Service layer: Starting forecast generation...")
 
-    # 2. Run the advection (pixel-pushing) algorithm using numpy
-    # forecast_aqi = perform_advection(current_air_data, wind_data_grid, tempo_data_grid)
+    # 1. Fetch real-time ground truth data from AirNow
+    current_air_data = api_clients.get_airnow_data(lat, lon)
+    if not current_air_data:
+        raise ValueError("Could not retrieve current air quality data from AirNow.")
     
-    # Simulating the process for now
-    time.sleep(1.5) 
+    current_aqi = current_air_data.get("AQI", 50) # Default to 50 if not found
+    print(f"Service layer: Current AQI at location is {current_aqi}")
 
-    # Generate mock data
-    current_aqi = random.randint(30, 70)
-    forecast_aqi_value = current_aqi + random.randint(-10, 30)
+    # 2. Fetch wind forecast grid from NWS
+    # This gives us a list of hourly wind forecasts (speed and direction)
+    wind_forecast_hourly = api_clients.get_nws_wind_forecast(lat, lon)
+    if not wind_forecast_hourly:
+        raise ValueError("Could not retrieve wind forecast data from NWS.")
+    print(f"Service layer: Fetched {len(wind_forecast_hourly)} hours of wind data.")
+
+    # 3. Run the advection model
+    # This simulates the movement of the current pollution plume over the next 3 hours
+    forecast_aqi = advection_model.run_simple_advection(
+        initial_aqi=current_aqi,
+        wind_data=wind_forecast_hourly,
+        hours=3
+    )
+    print(f"Service layer: Model predicts a 3-hour AQI of {forecast_aqi}")
 
     def get_level(aqi):
         if aqi <= 50: return "Good"
@@ -33,20 +37,24 @@ def run_advection_model(lat: float, lon: float):
         if aqi <= 150: return "Unhealthy for Sensitive Groups"
         return "Unhealthy"
 
-    mock_forecast = {
+    # 4. Format and return the final response
+    result = {
         "location": {"lat": lat, "lon": lon},
         "current": {
             "aqi": current_aqi,
-            "level": get_level(current_aqi)
+            "level": get_level(current_aqi),
+            "source": "AirNow.gov",
+            "reporting_area": current_air_data.get("ReportingArea", "N/A"),
+            "pollutant": current_air_data.get("CategoryName", "N/A")
         },
         "forecast": {
             "three_hour": {
-                "aqi": forecast_aqi_value,
-                "level": get_level(forecast_aqi_value)
+                "aqi": round(forecast_aqi),
+                "level": get_level(forecast_aqi)
             }
         },
-        "message": "This is a simulated forecast from the Python service."
+        "message": "Forecast generated using NWS wind data and an advection model."
     }
     
-    print("Service layer: Simulation complete.")
-    return mock_forecast
+    return result
+
