@@ -1,28 +1,11 @@
 "use client";
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent } from 'react';
 import axios from 'axios';
-import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
+import dynamic from 'next/dynamic';
+import { useMemo } from 'react';
 
-// Fix for default Leaflet icon issue with Webpack
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-});
-
-
-// A component to update map view when the forecast location changes
-const ChangeView = ({ center, zoom }: { center: [number, number], zoom: number }) => {
-  const map = useMap();
-  map.setView(center, zoom);
-  return null;
-};
-
-// Main component for the SkySense application
-export default function SkySenseHome() {
+// Main component for the AirQ application
+export default function AirQHome() {
   const [locationName, setLocationName] = useState<string>('New York, NY');
   const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.0060]);
 
@@ -30,8 +13,14 @@ export default function SkySenseHome() {
   const [forecast, setForecast] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // TEMPO Satellite Layer for Nitrogen Dioxide from NASA GIBS
-  const tempoTileUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/TEMPO_L3_NO2_V03_Trop_Col/default/2024-03-28/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`;
+  // Dynamically import the MapView component and disable Server-Side Rendering (SSR)
+  const MapView = useMemo(() => dynamic(() => import('../components/MapView'), {
+    ssr: false, // This is the key to fixing the error
+    loading: () => <div className="w-full h-full bg-gray-700 flex items-center justify-center"><p>Loading map...</p></div>,
+  }), []);
+
+
+  const tempoTileUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/TEMPO_L3_NO2_V03_Trop_Col/default/2023-11-01/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -44,6 +33,7 @@ export default function SkySenseHome() {
       // A real app would use a geocoding API to convert locationName to lat/lon.
       const coordinates = { lat: mapCenter[0], lon: mapCenter[1] };
 
+      // --- FIX: Reverted to the correct hardcoded URL for your multi-port setup ---
       const response = await axios.get(`http://localhost:3001/api/forecast?lat=${coordinates.lat}&lon=${coordinates.lon}`);
       setForecast(response.data);
 
@@ -68,24 +58,14 @@ export default function SkySenseHome() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4 font-sans">
       <div className="w-full max-w-6xl">
         <header className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-blue-400">SkySense</h1>
+          <h1 className="text-5xl font-bold text-blue-400">AirQ</h1>
           <p className="text-lg text-gray-400 mt-2">Real-time Air Quality Forecasting with NASA Data</p>
         </header>
 
         <main className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column: Map */}
-          <div className="bg-gray-800 p-4 rounded-lg shadow-2xl h-[450px] lg:h-auto">
-            <MapContainer center={mapCenter} zoom={9} style={{ height: '100%', width: '100%' }} className="rounded-md">
-              <ChangeView center={mapCenter} zoom={9} />
-              <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              />
-              <TileLayer url={tempoTileUrl} opacity={0.6} attribution="NASA GIBS | TEMPO NO2" />
-              <Marker position={mapCenter}>
-                <Popup>Your selected location</Popup>
-              </Marker>
-            </MapContainer>
+          <div className="bg-gray-800 p-4 rounded-lg shadow-2xl h-[450px] lg:h-[600px]">
+            <MapView center={mapCenter} zoom={9} tempoTileUrl={tempoTileUrl} />
           </div>
 
           {/* Right Column: Controls and Forecast */}
@@ -118,7 +98,8 @@ export default function SkySenseHome() {
               <h2 className="text-2xl font-semibold mb-4 text-gray-300">Forecast Details</h2>
               {loading && <p>Loading forecast...</p>}
               {error && <div className="text-red-400">{error}</div>}
-              {forecast && (
+              {/* FIX: Added more robust checks to prevent crashes if the response is malformed */}
+              {forecast && forecast.current && forecast.forecast?.three_hour && (
                 <div className="space-y-4">
                   <div>
                     <p className="text-gray-400">Current AQI in {forecast.current.reporting_area}:</p>

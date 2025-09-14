@@ -29,7 +29,7 @@ def get_airnow_data(lat: float, lon: float):
 def get_nws_wind_forecast(lat: float, lon: float):
     """Fetches wind forecast grid from the National Weather Service."""
     headers = {
-        'User-Agent': '(SkySense-hackathon, a.student@example.com)'
+        'User-Agent': '(NASA Space Apps - AirQ Project, shubhashish147@gmail.com)'
     }
     
     try:

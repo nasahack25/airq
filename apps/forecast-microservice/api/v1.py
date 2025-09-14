@@ -3,7 +3,7 @@ from services import forecast_service
 
 router = APIRouter()
 
-@router.get("/generate-forecast", summary="Generate Air Quality Forecast")
+@router.get("/forecast", summary="Generate Air Quality Forecast")
 def generate_forecast(lat: float, lon: float):
     """
     Main endpoint for forecasting. It receives coordinates, passes them
