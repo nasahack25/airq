@@ -1,57 +1,55 @@
 "use client";
 
+// --- FIX: Defined props interface ---
 interface AqiGaugeProps {
-    aqi: number;
+    aqi: number | undefined;
 }
 
-const AqiGauge = ({ aqi }: AqiGaugeProps) => {
-    const AQI_CATEGORIES = [
-        { name: "Good", color: "#22c55e", range: [0, 50] },
-        { name: "Moderate", color: "#facc15", range: [51, 100] },
-        { name: "Unhealthy for SG", color: "#f97316", range: [101, 150] },
-        { name: "Unhealthy", color: "#ef4444", range: [151, 200] },
-        { name: "Very Unhealthy", color: "#a855f7", range: [201, 300] },
-        { name: "Hazardous", color: "#7f1d1d", range: [301, 500] },
-    ];
-    const MAX_AQI = 300; // Cap the visual gauge at 300 for better scaling
+export default function AqiGauge({ aqi }: AqiGaugeProps) {
+    const aqiValue = aqi ?? 0;
 
-    const percentage = Math.min(aqi / MAX_AQI, 1);
-    const rotation = percentage * 180 - 90;
+    // Calculate the rotation for the gauge needle.
+    // The gauge spans 180 degrees. Max AQI for this scale is 300 for simplicity.
+    const percentage = Math.min(aqiValue / 300, 1);
+    const rotation = percentage * 180 - 90; // -90 to 0 to 90 degrees
+
+    const segments = [
+        { color: 'bg-green-500', label: 'Good', range: '0-50' },
+        { color: 'bg-yellow-500', label: 'Mod', range: '51-100' },
+        { color: 'bg-orange-500', label: 'USG', range: '101-150' },
+        { color: 'bg-red-500', label: 'Unhealthy', range: '151-200' },
+        { color: 'bg-purple-500', label: 'Very Unhealthy', range: '201-300' },
+    ];
 
     return (
-        <div className="relative w-full max-w-sm mx-auto flex justify-center items-center">
-            <svg viewBox="0 0 100 55" className="w-full">
-                {/* Gauge background arcs */}
-                {AQI_CATEGORIES.map((cat, index) => {
-                    const startAngle = (cat.range[0] / MAX_AQI) * 180 - 90;
-                    const endAngle = (Math.min(cat.range[1], MAX_AQI) / MAX_AQI) * 180 - 90;
-                    const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
-                    const start = {
-                        x: 50 + 45 * Math.cos(startAngle * Math.PI / 180),
-                        y: 50 + 45 * Math.sin(startAngle * Math.PI / 180),
-                    };
-                    const end = {
-                        x: 50 + 45 * Math.cos(endAngle * Math.PI / 180),
-                        y: 50 + 45 * Math.sin(endAngle * Math.PI / 180),
-                    };
-                    return (
-                        <path
-                            key={cat.name}
-                            d={`M ${start.x} ${start.y} A 45 45 0 ${largeArcFlag} 1 ${end.x} ${end.y}`}
-                            fill="none"
-                            stroke={cat.color}
-                            strokeWidth="10"
-                        />
-                    );
-                })}
+        <div className="bg-gray-800 p-6 rounded-lg shadow-2xl">
+            <h3 className="text-lg font-semibold text-gray-300 mb-4 text-center">AQI Scale</h3>
+            <div className="relative w-full h-28 flex items-end justify-center">
+                {/* Gauge Background */}
+                <div className="absolute bottom-0 w-full h-full overflow-hidden rounded-t-full">
+                    <div className="absolute w-full h-[200%] rounded-full flex">
+                        <div className="w-1/5 bg-green-500"></div>
+                        <div className="w-1/5 bg-yellow-500"></div>
+                        <div className="w-1/5 bg-orange-500"></div>
+                        <div className="w-1/5 bg-red-500"></div>
+                        <div className="w-1/5 bg-purple-500"></div>
+                    </div>
+                </div>
+
                 {/* Needle */}
-                <g transform={`rotate(${rotation} 50 50)`}>
-                    <path d="M 50 50 L 50 10" stroke="white" strokeWidth="2" />
-                    <circle cx="50" cy="50" r="3" fill="white" />
-                </g>
-            </svg>
+                <div className="absolute bottom-0 h-24 w-1 transition-transform duration-700 ease-in-out" style={{ transform: `rotate(${rotation}deg)`, transformOrigin: 'bottom center' }}>
+                    <div className="w-full h-full bg-white rounded-t-full"></div>
+                </div>
+
+                {/* Center Circle */}
+                <div className="absolute w-6 h-6 bg-gray-700 rounded-full border-2 border-white" style={{ bottom: '-0.75rem' }}></div>
+            </div>
+            <div className="text-xs text-gray-400 flex justify-between mt-2 px-2">
+                <span>0</span>
+                <span>150</span>
+                <span>300</span>
+            </div>
         </div>
     );
-};
+}
 
-export default AqiGauge;

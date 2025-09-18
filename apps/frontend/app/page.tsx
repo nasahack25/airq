@@ -1,127 +1,109 @@
 "use client";
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
+import { useDebounce } from 'use-debounce';
+
 import LocationSearch from '../components/LocationSearch';
 import MainAqiDisplay from '../components/dashboard/MainAqiDisplay';
 import AqiGauge from '../components/dashboard/AqiGauge';
-import CurrentWeather from '../components/dashboard/CurrentWeather';
 import HourlyForecast from '../components/dashboard/HourlyForecast';
+import CurrentWeather from '../components/dashboard/CurrentWeather';
 
 export default function AirQHome() {
-  const [locationName, setLocationName] = useState<string>('New York, NY');
-  const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.0060]);
+  // State management
+  const [locationName, setLocationName] = useState<string>('Detecting location...');
+  const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]); // Default to India center
+  const [debouncedMapCenter] = useDebounce(mapCenter, 500);
 
-  const [loading, setLoading] = useState<boolean>(true); // Start loading initially
+  const [loading, setLoading] = useState<boolean>(true);
   const [forecast, setForecast] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
   const MapView = useMemo(() => dynamic(() => import('../components/MapView'), {
     ssr: false,
-    loading: () => <div className="w-full h-full bg-gray-700 flex items-center justify-center"><p>Loading map...</p></div>,
+    loading: () => <div className="w-full h-full bg-gray-700 animate-pulse rounded-lg" />,
   }), []);
 
-  const fetchForecast = useCallback(async (lat: number, lon: number) => {
+  const getForecast = useCallback(async (lat: number, lon: number) => {
     setLoading(true);
     setError(null);
-    setForecast(null);
-
     try {
       const response = await axios.get(`http://localhost:3001/api/forecast?lat=${lat}&lon=${lon}`);
       setForecast(response.data);
-      setLocationName(response.data.location.name);
+      if (response.data.current?.city_name) {
+        setLocationName(response.data.current.city_name);
+      }
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'An unexpected error occurred.');
+      setError(err.response?.data?.detail || err.response?.data?.error || err.message || 'An unexpected error occurred.');
+      setForecast(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Effect for initial geolocation fetch
+  // Effect for initial geolocation
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setMapCenter([latitude, longitude]);
-          fetchForecast(latitude, longitude);
-        },
-        (error) => { // Handle user denying permission
-          console.error("Geolocation error:", error);
-          fetchForecast(mapCenter[0], mapCenter[1]); // Fetch for default location
-        }
-      );
-    } else {
-      fetchForecast(mapCenter[0], mapCenter[1]); // Geolocation not supported
-    }
-  }, [fetchForecast]); // Note: mapCenter is removed to prevent re-fetching on map move
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setMapCenter([latitude, longitude]);
+      },
+      (err) => {
+        console.error("Geolocation error:", err.message);
+        // If user denies location, fetch for the default location
+        getForecast(mapCenter[0], mapCenter[1]);
+        setLocationName('New Delhi, India');
+      }
+    );
+  }, []);
 
-  const handleLocationSelect = (lat: number, lon: number, name: string) => {
-    setMapCenter([lat, lon]);
-    setLocationName(name);
-    fetchForecast(lat, lon);
-  };
+  // Effect to fetch forecast when map center changes
+  useEffect(() => {
+    getForecast(debouncedMapCenter[0], debouncedMapCenter[1]);
+  }, [debouncedMapCenter, getForecast]);
 
+  // --- THIS IS THE FIX ---
+  // Handler for map clicks, passed to the MapView component.
   const handleMapClick = (lat: number, lon: number) => {
     setMapCenter([lat, lon]);
-    fetchForecast(lat, lon);
+    setLocationName('Selected Location'); // Reset name on click
   };
+  // ---------------------
 
   return (
-    <div className="bg-gray-900 text-white min-h-screen font-sans">
-      <header className="text-center py-6 bg-gray-800/50">
-        <h1 className="text-4xl font-bold text-blue-400">AirQ</h1>
-        <p className="text-md text-gray-400 mt-1">Global Air Quality Forecasting</p>
-      </header>
+    <div className="flex flex-col items-center min-h-screen bg-gray-900 text-white p-4 font-sans">
+      <div className="w-full max-w-7xl mx-auto">
+        <header className="flex flex-col md:flex-row justify-between items-center mb-6">
+          <div className="text-center md:text-left">
+            <h1 className="text-4xl font-bold text-blue-400">AirQ</h1>
+            <p className="text-lg text-gray-400 mt-1">Global Air Quality Forecasting</p>
+          </div>
+          <div className="w-full md:w-1/3 mt-4 md:mt-0">
+            <LocationSearch onLocationSelect={(lat, lon, name) => {
+              setMapCenter([lat, lon]);
+              setLocationName(name);
+            }} />
+          </div>
+        </header>
 
-      <div className="w-full max-w-7xl mx-auto p-4">
-        <div className="mb-6 p-4 bg-gray-800 rounded-lg shadow-lg">
-          <LocationSearch onLocationSelect={handleLocationSelect} />
-        </div>
+        <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column: Dashboard Widgets */}
+          <div className="lg:col-span-1 flex flex-col gap-6">
+            <MainAqiDisplay loading={loading} error={error} forecast={forecast} locationName={locationName} />
+            <AqiGauge aqi={forecast?.current?.aqi} />
+            <CurrentWeather weather={forecast?.current?.weather} />
+          </div>
 
-        {loading && <div className="text-center p-10">Loading forecast data...</div>}
-        {error && <div className="text-center p-10 text-red-400">Error: {error}</div>}
-
-        {forecast && (
-          <main className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {/* Left Column: Dashboard Widgets */}
-            <div className="lg:col-span-2 flex flex-col gap-6">
-              <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <MainAqiDisplay
-                  aqi={forecast.current.aqi}
-                  level={forecast.current.level}
-                  pollutant={forecast.current.pollutant}
-                  locationName={locationName}
-                />
-              </div>
-              <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <AqiGauge aqi={forecast.current.aqi} />
-              </div>
-              <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <CurrentWeather
-                  humidity={forecast.current.humidity}
-                  windSpeed={forecast.current.wind_speed_kmh}
-                  windDirection={forecast.current.wind_direction_deg}
-                />
-              </div>
+          {/* Right Column: Map and Hourly Forecast */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            <div className="bg-gray-800 p-2 rounded-lg shadow-2xl h-[450px] lg:h-[450px]">
+              <MapView center={mapCenter} zoom={9} onMapClick={handleMapClick} />
             </div>
-
-            {/* Right Column: Map and Hourly */}
-            <div className="lg:col-span-3 flex flex-col gap-6">
-              <div className="bg-gray-800 p-4 rounded-lg shadow-lg h-[450px] lg:h-[500px]">
-                <MapView
-                  center={mapCenter}
-                  zoom={10}
-                  onMapClick={handleMapClick}
-                />
-              </div>
-              <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <HourlyForecast hourlyData={forecast.forecast.hourly} />
-              </div>
-            </div>
-          </main>
-        )}
+            <HourlyForecast forecast={forecast?.hourly_forecast} />
+          </div>
+        </main>
       </div>
     </div>
   );

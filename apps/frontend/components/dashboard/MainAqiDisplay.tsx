@@ -1,47 +1,76 @@
 "use client";
 
+// --- FIX: Defined props interface ---
 interface MainAqiDisplayProps {
-    aqi: number;
-    level: string;
-    pollutant: string;
+    loading: boolean;
+    error: string | null;
+    forecast: any;
     locationName: string;
 }
 
-const MainAqiDisplay = ({ aqi, level, pollutant, locationName }: MainAqiDisplayProps) => {
-    const getAqiColor = (level: string) => {
-        switch (level) {
-            case "Good": return "text-green-400";
-            case "Moderate": return "text-yellow-400";
-            case "Unhealthy for Sensitive Groups": return "text-orange-400";
-            case "Unhealthy": return "text-red-500";
-            case "Very Unhealthy": return "text-purple-500";
-            case "Hazardous": return "text-red-800";
-            default: return "text-gray-400";
-        }
-    };
-
-    const getActionableAdvice = (level: string) => {
-        switch (level) {
-            case "Good": return "It's a great day for outdoor activities!";
-            case "Moderate": return "Unusually sensitive people should reduce heavy exertion.";
-            case "Unhealthy for Sensitive Groups": return "Sensitive groups should limit outdoor exertion.";
-            case "Unhealthy": return "Everyone should limit prolonged outdoor exertion.";
-            case "Very Unhealthy": return "Everyone should avoid prolonged outdoor exertion.";
-            case "Hazardous": return "Everyone should avoid all outdoor exertion.";
-            default: return "Air quality information is currently unavailable.";
-        }
-    }
-
-    return (
-        <div className="text-center">
-            <p className="text-gray-400">Current AQI in</p>
-            <h2 className="text-3xl font-bold mb-2">{locationName}</h2>
-            <p className={`text-8xl font-bold ${getAqiColor(level)}`}>{aqi}</p>
-            <p className={`text-2xl font-semibold ${getAqiColor(level)}`}>{level}</p>
-            <p className="text-gray-400 mt-1">Main Pollutant: {pollutant}</p>
-            <p className="text-lg mt-4 text-gray-300">{getActionableAdvice(level)}</p>
-        </div>
-    );
+// Helper function to get the appropriate color for the AQI level
+const getAqiColor = (level: string) => {
+    if (!level) return "text-gray-400";
+    if (level.includes("Good")) return "text-green-400";
+    if (level.includes("Moderate")) return "text-yellow-400";
+    if (level.includes("Unhealthy for Sensitive")) return "text-orange-400";
+    if (level.includes("Unhealthy")) return "text-red-500";
+    if (level.includes("Very Unhealthy")) return "text-purple-500";
+    if (level.includes("Hazardous")) return "text-maroon-500";
+    return "text-gray-400";
 };
 
-export default MainAqiDisplay;
+// Helper function to get actionable advice based on AQI
+const getAqiAdvice = (level: string) => {
+    if (!level) return "AQI data is not available.";
+    if (level.includes("Good")) return "It's a great day for outdoor activities!";
+    if (level.includes("Moderate")) return "Unusually sensitive individuals should consider reducing prolonged or heavy exertion.";
+    if (level.includes("Unhealthy for Sensitive")) return "Sensitive groups may experience health effects. The general public is less likely to be affected.";
+    if (level.includes("Unhealthy")) return "Everyone may begin to experience some adverse health effects.";
+    if (level.includes("Very Unhealthy")) return "Health alert: everyone may experience more serious health effects.";
+    if (level.includes("Hazardous")) return "Health warning of emergency conditions: everyone is more likely to be affected.";
+    return "AQI data is not available.";
+};
+
+
+export default function MainAqiDisplay({ loading, error, forecast, locationName }: MainAqiDisplayProps) {
+    if (loading) {
+        return (
+            <div className="bg-gray-800 p-6 rounded-lg shadow-2xl animate-pulse">
+                <div className="h-6 bg-gray-700 rounded w-3/4 mb-4"></div>
+                <div className="h-16 bg-gray-700 rounded w-1/2 mb-2"></div>
+                <div className="h-8 bg-gray-700 rounded w-1/3"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="bg-gray-800 p-6 rounded-lg shadow-2xl text-center">
+                <h2 className="text-xl font-semibold text-red-400">Error</h2>
+                <p className="text-gray-400 mt-2">{error}</p>
+            </div>
+        )
+    }
+
+    if (!forecast || !forecast.current) {
+        return (
+            <div className="bg-gray-800 p-6 rounded-lg shadow-2xl text-center">
+                <h2 className="text-xl font-semibold text-gray-400">No Data Available</h2>
+                <p className="text-gray-300 mt-2">Could not retrieve data for the selected location.</p>
+            </div>
+        );
+    }
+
+    const { aqi, level, pollutant } = forecast.current;
+
+    return (
+        <div className="bg-gray-800 p-6 rounded-lg shadow-2xl">
+            <h2 className="text-lg font-medium text-gray-400 truncate" title={locationName}>{locationName}</h2>
+            <p className={`text-7xl font-bold mt-2 ${getAqiColor(level)}`}>{aqi || 'N/A'}</p>
+            <p className={`text-2xl font-semibold ${getAqiColor(level)}`}>{level || 'Unknown'} {pollutant ? `(${pollutant})` : ''}</p>
+            <p className="text-gray-300 mt-4 text-sm">{getAqiAdvice(level)}</p>
+        </div>
+    );
+}
+
