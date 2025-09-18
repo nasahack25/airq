@@ -1,71 +1,60 @@
 import os
 import requests
-from datetime import date
 
 # Get the API key from environment variables
-AIRNOW_API_KEY = os.getenv("AIRNOW_API_KEY")
+AQICN_API_KEY = os.getenv("AQICN_API_KEY")
 
-def get_airnow_data(lat: float, lon: float):
-    """Fetches real-time air quality data from AirNow."""
-    if not AIRNOW_API_KEY:
-        raise ValueError("AIRNOW_API_KEY not found in environment variables.")
+def get_waqi_data(lat: float, lon: float):
+    # ... this function remains the same
+    if not AQICN_API_KEY:
+        raise ValueError("AQICN_API_KEY not found in environment variables.")
         
-    today = date.today().strftime("%Y-%m-%d")
-    url = f"https://www.airnowapi.org/aq/observation/latLong/current/?format=application/json&latitude={lat}&longitude={lon}&date={today}&distance=25&API_KEY={AIRNOW_API_KEY}"
+    url = f"https://api.waqi.info/feed/geo:{lat};{lon}/?token={AQICN_API_KEY}"
     
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         response.raise_for_status()
         data = response.json()
-        # AirNow returns a list, we care about the most relevant pollutant, often the first or second one
-        if data:
-            # Find the highest AQI value to be representative
-            return max(data, key=lambda x: x['AQI'])
+        if data.get("status") == "ok":
+            return data.get("data")
         return None
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching data from AirNow: {e}")
+        print(f"Error fetching data from WAQI: {e}")
         return None
 
-def get_nws_wind_forecast(lat: float, lon: float):
-    """Fetches wind forecast grid from the National Weather Service."""
-    headers = {
-        'User-Agent': '(NASA Space Apps - AirQ Project, shubhashish147@gmail.com)'
-    }
+def get_open_meteo_wind_forecast(lat: float, lon: float):
+    """Fetches hourly wind forecast from the Open-Meteo API."""
+    
+    # --- THIS IS THE FIX ---
+    # Changed 'humidity_2m' to the correct parameter 'relative_humidity_2m'.
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=wind_speed_10m,wind_direction_10m,weather_code,relative_humidity_2m"
+    # ---------------------
     
     try:
-        # Step 1: Get the gridpoint URL for the given coordinates
-        points_url = f"https://api.weather.gov/points/{lat},{lon}"
-        points_response = requests.get(points_url, headers=headers)
-        points_response.raise_for_status()
-        grid_url = points_response.json()['properties']['forecastGridData']
-
-        # Step 2: Get the raw grid data
-        grid_response = requests.get(grid_url, headers=headers)
-        grid_response.raise_for_status()
-        grid_data = grid_response.json()
-
-        # Step 3: Parse wind speed and direction
-        # The data structure is complex, we need to find the layers for wind
-        wind_direction_data = grid_data['properties']['windDirection']['values']
-        wind_speed_data = grid_data['properties']['windSpeed']['values']
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json().get("hourly")
         
+        if not data:
+            return None
+
         # Combine the data into a list of hourly forecasts
         hourly_forecasts = []
-        # We assume the lists are of the same length
-        for dir_entry, speed_entry in zip(wind_direction_data, wind_speed_data):
-            # We also assume validTime and value are present
+        for i, time in enumerate(data.get("time", [])):
             hourly_forecasts.append({
-                "time": dir_entry['validTime'],
-                "direction_deg": dir_entry['value'],
-                "speed_mph": speed_entry['value']
+                "time": time,
+                "direction_deg": data["wind_direction_10m"][i],
+                "speed_kmh": data["wind_speed_10m"][i],
+                "weather_code": data["weather_code"][i],
+                "humidity": data["relative_humidity_2m"][i], # Updated key here as well
             })
 
         return hourly_forecasts
 
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching data from NWS: {e}")
+        print(f"Error fetching data from Open-Meteo: {e}")
         return None
     except (KeyError, IndexError) as e:
-        print(f"Error parsing NWS data structure: {e}")
+        print(f"Error parsing Open-Meteo data structure: {e}")
         return None
 
