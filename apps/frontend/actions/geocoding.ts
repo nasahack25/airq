@@ -7,7 +7,7 @@ export async function searchLocations(query: string) {
     return []
   }
 
-  const apiKey = process.env.OPENCAGE_API_KEY
+  const apiKey = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY
   if (!apiKey) {
     console.error("OpenCage API key not found in server environment.")
     return []
