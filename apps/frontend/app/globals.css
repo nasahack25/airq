@@ -1,1 +1,303 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* AirQ Design System - Clean Air Theme */
+  --background: #ffffff; /* Clean White */
+  --foreground: #0e4c92; /* Deep Blue */
+  --card: #e0f7fa; /* Light Cyan */
+  --card-foreground: #0e4c92; /* Deep Blue */
+  --popover: #ffffff; /* Clean White */
+  --popover-foreground: #0e4c92; /* Deep Blue */
+  --primary: #0e4c92; /* Deep Blue for buttons and headers */
+  --primary-foreground: #ffffff; /* White text on primary */
+  --secondary: #4caf50; /* Calming Green for highlights */
+  --secondary-foreground: #ffffff; /* White text on secondary */
+  --muted: #b2ebf2; /* Soft Aqua for subtle backgrounds */
+  --muted-foreground: #0e4c92; /* Deep Blue for muted text */
+  --accent: #4caf50; /* Calming Green for interactive elements */
+  --accent-foreground: #ffffff; /* White text on accents */
+  --destructive: #d32f2f; /* Red for error states */
+  --destructive-foreground: #ffffff; /* White text on destructive actions */
+  --border: #b2ebf2; /* Soft Aqua for borders */
+  --input: #ffffff; /* Clean White for input fields */
+  --ring: #4caf50; /* Green for focus rings */
+  --chart-1: #0e4c92; /* Deep Blue for data visualizations */
+  --chart-2: #4caf50; /* Calming Green for additional data */
+  --chart-3: #b2ebf2; /* Soft Aqua for third data set */
+  --chart-4: #e0f7fa; /* Light Cyan for fourth data set */
+  --chart-5: #ffffff; /* Clean White for background of charts */
+  --radius: 0.5rem; /* Rounded corners for a soft, inviting feel */
+  --sidebar: #ffffff; /* Clean White for sidebar */
+  --sidebar-foreground: #0e4c92; /* Deep Blue for sidebar text */
+  --sidebar-primary: #e0f7fa; /* Light Cyan for active sidebar items */
+  --sidebar-primary-foreground: #0e4c92; /* Deep Blue for sidebar active text */
+  --sidebar-accent: #4caf50; /* Green for accent items in sidebar */
+  --sidebar-accent-foreground: #ffffff; /* White text on sidebar accents */
+  --sidebar-border: #b2ebf2; /* Soft Aqua for sidebar borders */
+  --sidebar-ring: #4caf50; /* Green for sidebar focus rings */
+}
+
+.dark {
+  /* Dark mode with deep blues and subtle greens */
+  --background: #0a1929; /* Deep Navy */
+  --foreground: #ffffff; /* Clean White */
+  --card: #1e3a5f; /* Dark Blue Card */
+  --card-foreground: #ffffff; /* White text on cards */
+  --popover: #1e3a5f; /* Dark Blue */
+  --popover-foreground: #ffffff; /* White text */
+  --primary: #4caf50; /* Calming Green primary in dark mode */
+  --primary-foreground: #ffffff; /* White text on primary */
+  --secondary: #0e4c92; /* Deep Blue secondary */
+  --secondary-foreground: #ffffff; /* White text on secondary */
+  --muted: #2c5282; /* Muted Blue */
+  --muted-foreground: #b2ebf2; /* Light Cyan for muted text */
+  --accent: #4caf50; /* Calming Green for interactive elements */
+  --accent-foreground: #ffffff; /* White text on accents */
+  --destructive: #f56565; /* Light Red for error states */
+  --destructive-foreground: #ffffff; /* White text on destructive actions */
+  --border: #2c5282; /* Muted Blue for borders */
+  --input: #1e3a5f; /* Dark Blue for input fields */
+  --ring: #4caf50; /* Green for focus rings */
+  --chart-1: #4caf50; /* Green for primary data */
+  --chart-2: #0e4c92; /* Deep Blue for secondary data */
+  --chart-3: #b2ebf2; /* Light Cyan for third data set */
+  --chart-4: #e0f7fa; /* Very Light Cyan for fourth data set */
+  --chart-5: #2c5282; /* Muted Blue for chart backgrounds */
+  --sidebar: #1e3a5f; /* Dark Blue for sidebar */
+  --sidebar-foreground: #ffffff; /* White for sidebar text */
+  --sidebar-primary: #4caf50; /* Green for active sidebar items */
+  --sidebar-primary-foreground: #ffffff; /* White for sidebar active text */
+  --sidebar-accent: #0e4c92; /* Deep Blue for accent items in sidebar */
+  --sidebar-accent-foreground: #ffffff; /* White text on sidebar accents */
+  --sidebar-border: #2c5282; /* Muted Blue for sidebar borders */
+  --sidebar-ring: #4caf50; /* Green for sidebar focus rings */
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* Custom animations for AirQ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes countUp {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+  66% {
+    transform: translateY(-5px) rotate(-1deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(76, 175, 80, 0.6), 0 0 40px rgba(76, 175, 80, 0.3);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-count-up {
+  animation: countUp 0.8s ease-out;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200px 100%;
+}
+
+.animate-slide-in-left {
+  animation: slideInFromLeft 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInFromRight 0.6s ease-out;
+}
+
+/* Glassmorphism effects */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-dark {
+  background: rgba(30, 58, 95, 0.4);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Smooth page transitions */
+.page-transition {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, var(--primary), var(--accent));
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, var(--accent), var(--primary));
+}
+
+/* Smooth focus transitions for better accessibility */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  transition: outline-color 0.2s ease-in-out;
+}
+
+/* Enhanced button hover effects */
+.btn-hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading skeleton animation */
+.skeleton {
+  background: linear-gradient(90deg, var(--muted) 25%, var(--muted-foreground) 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
