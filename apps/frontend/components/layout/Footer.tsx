@@ -71,7 +71,7 @@ export default function Footer() {
 
         <div className="border-t border-border/20 mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center">
           <p className="text-muted-foreground text-sm">
-            © 2024 AirQ. Helping you breathe easier with data-driven insights.
+            © 2025 AirQ. Helping you breathe easier with data-driven insights.
           </p>
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">
             <span className="text-xs text-muted-foreground">Powered by global environmental data</span>

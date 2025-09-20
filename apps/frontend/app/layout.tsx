@@ -40,7 +40,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
         <FloatingElements />
         <Navbar />
-        <main className="flex-1 pt-16 relative z-10">
+        <main className="flex-1 relative z-10">
           <PageTransition>{children}</PageTransition>
         </main>
         <Footer />
