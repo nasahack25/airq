@@ -27,8 +27,7 @@ const ChangeView = ({ center, zoom }: { center: [number, number]; zoom: number }
   return null
 }
 
-// --- THIS IS THE FIX ---
-// A new component to handle map clicks and normalize coordinates.
+// A component to handle map clicks and normalize coordinates.
 const MapClickHandler = ({ onMapClick }: { onMapClick: (lat: number, lon: number) => void }) => {
   const normalizeLongitude = (lon: number): number => {
     // Wraps the longitude to the -180 to 180 range.
@@ -43,7 +42,6 @@ const MapClickHandler = ({ onMapClick }: { onMapClick: (lat: number, lon: number
   })
   return null
 }
-// ---------------------
 
 export default function MapView({ center, zoom, onMapClick }: MapViewProps) {
   const [showTempo, setShowTempo] = useState(false)
@@ -72,16 +70,31 @@ export default function MapView({ center, zoom, onMapClick }: MapViewProps) {
   }
 
   return (
-    <MapContainer center={center} zoom={zoom} style={{ height: "100%", width: "100%" }} className="rounded-md">
+    <MapContainer center={center} zoom={zoom} style={{ height: "100%", width: "100%" }} className="rounded-lg shadow-inner">
       <ChangeView center={center} zoom={zoom} />
       <MapClickHandler onMapClick={onMapClick} />
       <MapBoundsChecker />
+
+      {/* --- THIS IS THE FIX --- */}
+      {/* Base Layer: Beautiful satellite imagery from Esri */}
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+        zIndex={1}
       />
-      {showTempo && <TileLayer url={tempoTileUrl} opacity={0.6} attribution="NASA GIBS | TEMPO NO2" />}
-      <Marker position={center}>
+
+      {/* Data Layer: Your NASA TEMPO data (conditional) */}
+      {showTempo && <TileLayer url={tempoTileUrl} opacity={0.6} attribution="NASA GIBS | TEMPO NO2" zIndex={2} />}
+
+      {/* Label Layer: Crisp, clear labels that sit on top of everything */}
+      <TileLayer
+        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png"
+        attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+        zIndex={3}
+      />
+      {/* --------------------- */}
+
+      <Marker position={center} zIndexOffset={4}>
         <Popup>Your selected location</Popup>
       </Marker>
     </MapContainer>
