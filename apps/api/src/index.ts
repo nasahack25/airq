@@ -1,3 +1,4 @@
+import "./oauth/passport"
 import cookieParser from "cookie-parser";
 import express, { Request, Response } from 'express';
 import session from 'express-session';
