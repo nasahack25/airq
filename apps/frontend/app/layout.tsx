@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar"
 import Footer from "@/components/layout/Footer"
 import PageTransition from "@/components/ui/PageTransition"
 import FloatingElements from "@/components/ui/FloatingElements"
+import { AuthProvider } from "@/context/AuthContext"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,12 +39,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
-        <FloatingElements />
-        <Navbar />
-        <main className="flex-1 relative z-10">
-          <PageTransition>{children}</PageTransition>
-        </main>
-        <Footer />
+        <AuthProvider>
+          <FloatingElements />
+          <Navbar />
+          <main className="flex-1 relative z-10">
+            <PageTransition>{children}</PageTransition>
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   )
