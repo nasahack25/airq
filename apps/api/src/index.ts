@@ -8,6 +8,7 @@ import { ForecastRouter } from './routes/forecastRoutes';
 import { UserRouter } from './routes/userRoutes';
 import { OauthRouter } from './oauth/main';
 import passport from "passport";
+import { communityRouter } from "./routes/communityRoutes";
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use(passport.session());
 app.use("/api", ForecastRouter);
 app.use("/api/v1/auth/user", UserRouter);
 app.use("/auth", OauthRouter);
+app.use('/api/community', communityRouter);
 
 app.listen(PORT, () => {
     console.log(`Node.js API Gateway listening on port ${PORT}`);
