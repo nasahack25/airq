@@ -17,8 +17,8 @@ into an intuitive, user-friendly platform that helps people make informed decisi
 | Service | URL | Status |
 |---------|-----|--------|
 | Frontend | [airq-nasa.vercel.app](https://airq-nasa.vercel.app) | [![Vercel](https://img.shields.io/badge/vercel-live-brightgreen.svg)](https://airq-nasa.vercel.app) |
-| API Gateway | [airqapi.vercel.app](https://airqapivercel.app) | [![Vercel](https://img.shields.io/badge/vercel-live-brightgreen.svg)](https://airqapi.vercel.app) |
-| Forecast Service | [airq-pgcv.onrender.com](https://airq-pgcv.onrender.com) | [![Render](https://img.shields.io/badge/render-live-brightgreen.svg)](https://airq-pgcv.onrender.com) |
+| API Gateway | [airqapi.vercel.app](https://airqapi.vercel.app) | [![Vercel](https://img.shields.io/badge/vercel-live-brightgreen.svg)](https://airqapi.vercel.app) |
+| Forecast Service | [https://airq-pgcv.onrender.com](https://airq-pgcv.onrender.com) | [![Render](https://img.shields.io/badge/render-live-brightgreen.svg)](https://airq-pgcv.onrender.com) |
 
 ## ✨ Key Features
 
