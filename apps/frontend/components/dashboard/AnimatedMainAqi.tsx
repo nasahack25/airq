@@ -4,10 +4,13 @@ import { useEffect, useState } from "react"
 import AnimatedCounter from "../ui/AnimatedCounter"
 
 // --- FIX: Defined props interface ---
+interface WeatherData { temperature?: number; humidity?: number; wind_speed?: number; [key: string]: unknown }
+interface CurrentData { aqi?: number; level?: string; pollutant?: string; weather?: WeatherData }
+interface ForecastData { current?: CurrentData }
 interface AnimatedMainAqiDisplayProps {
     loading: boolean
     error: string | null
-    forecast: any
+    forecast: ForecastData | null
     locationName: string
 }
 
@@ -44,12 +47,10 @@ export default function AnimatedMainAqiDisplay({
     forecast,
     locationName,
 }: AnimatedMainAqiDisplayProps) {
-    const [previousAqi, setPreviousAqi] = useState<number>(0)
     const [currentAqi, setCurrentAqi] = useState<number>(0)
 
     useEffect(() => {
         if (forecast?.current?.aqi && forecast.current.aqi !== currentAqi) {
-            setPreviousAqi(currentAqi)
             setCurrentAqi(forecast.current.aqi)
         }
     }, [forecast?.current?.aqi, currentAqi])
@@ -122,10 +123,10 @@ export default function AnimatedMainAqiDisplay({
             </div>
 
             <div className="text-center mb-6">
-                <div className={`text-8xl font-bold mb-2 animate-count-up ${getAqiColor(level)}`}>
+                <div className={`text-8xl font-bold mb-2 animate-count-up ${getAqiColor(level || "")}`}>
                     <AnimatedCounter value={aqi || 0} duration={1500} />
                 </div>
-                <div className={`text-2xl font-semibold mb-2 ${getAqiColor(level)}`}>
+                <div className={`text-2xl font-semibold mb-2 ${getAqiColor(level || "")}`}>
                     {level || "Unknown"} {pollutant ? `(${pollutant})` : ""}
                 </div>
             </div>
@@ -142,7 +143,7 @@ export default function AnimatedMainAqiDisplay({
                             />
                         </svg>
                     </div>
-                    <p className="text-card-foreground text-sm leading-relaxed">{getAqiAdvice(level)}</p>
+                    <p className="text-card-foreground text-sm leading-relaxed">{getAqiAdvice(level || "")}</p>
                 </div>
             </div>
         </div>

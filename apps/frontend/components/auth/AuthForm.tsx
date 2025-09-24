@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 
@@ -15,7 +15,7 @@ export default function AuthForm({ type }: AuthFormProps) {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
-    const router = useRouter();
+    // const router = useRouter();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,8 +33,9 @@ export default function AuthForm({ type }: AuthFormProps) {
             if (response.data.user) {
                 login(response.data.user);
             }
-        } catch (err: any) {
-            setError(err.response?.data?.message || `An error occurred during ${type}.`);
+        } catch (err: unknown) {
+            const anyErr = err as { response?: { data?: { message?: string } } }
+            setError(anyErr.response?.data?.message || `An error occurred during ${type}.`);
         } finally {
             setLoading(false);
         }

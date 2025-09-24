@@ -13,14 +13,6 @@ export default function AqiGauge({ aqi }: AqiGaugeProps) {
   const percentage = Math.min(aqiValue / 300, 1)
   const rotation = percentage * 180 - 90 // -90 to 0 to 90 degrees
 
-  const segments = [
-    { color: "bg-green-500", label: "Good", range: "0-50" },
-    { color: "bg-yellow-500", label: "Mod", range: "51-100" },
-    { color: "bg-orange-500", label: "USG", range: "101-150" },
-    { color: "bg-red-500", label: "Unhealthy", range: "151-200" },
-    { color: "bg-purple-500", label: "Very Unhealthy", range: "201-300" },
-  ]
-
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-2xl">
       <h3 className="text-lg font-semibold text-gray-300 mb-4 text-center">AQI Scale</h3>

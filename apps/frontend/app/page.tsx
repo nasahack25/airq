@@ -247,7 +247,7 @@ export default function HomePage() {
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-3">NASA Satellite Data</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    For North America, we provide stunning visualization from NASA's TEMPO satellite, showing
+                    For North America, we provide stunning visualization from NASA&apos;s TEMPO satellite, showing
                     high-resolution views of pollutants from space.
                   </p>
                 </div>

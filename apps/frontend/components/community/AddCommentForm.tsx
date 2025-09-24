@@ -6,7 +6,7 @@ import api from "@/lib/api"
 
 interface AddCommentFormProps {
     postId: string
-    onCommentAdded: (newComment: any) => void
+    onCommentAdded: (newComment: { id: string; content: string; createdAt: string; author: { id: string; username: string; avatar?: string } }) => void
 }
 
 export default function AddCommentForm({ postId, onCommentAdded }: AddCommentFormProps) {
@@ -25,8 +25,9 @@ export default function AddCommentForm({ postId, onCommentAdded }: AddCommentFor
             const response = await api.post(`/api/community/posts/${postId}/comments`, { content })
             onCommentAdded(response.data) // Pass the new comment back to the parent page
             setContent("") // Clear the input
-        } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to post comment.")
+        } catch (err: unknown) {
+            const anyErr = err as { response?: { data?: { message?: string } } }
+            setError(anyErr.response?.data?.message || "Failed to post comment.")
         } finally {
             setLoading(false)
         }

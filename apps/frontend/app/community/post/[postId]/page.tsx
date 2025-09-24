@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
 import api from "@/lib/api"
@@ -14,8 +14,12 @@ export default function PostDetailPage() {
     const { postId } = useParams()
     const { isAuthenticated, loading: authLoading } = useAuth()
 
-    const [post, setPost] = useState<any>(null)
-    const [comments, setComments] = useState<any[]>([])
+    interface Author { id: string; username: string; avatar?: string }
+    interface Comment { id: string; content: string; createdAt: string; author: Author }
+    interface Post { id: string; content: string; createdAt: string; imageUrl?: string; author: Author; _count: { comments: number; likes: number }; comments?: Comment[] }
+
+    const [post, setPost] = useState<Post | null>(null)
+    const [comments, setComments] = useState<Comment[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
@@ -23,7 +27,7 @@ export default function PostDetailPage() {
         if (!postId) return
         setLoading(true)
         try {
-            const response = await api.get(`/api/community/posts/${postId}`)
+            const response = await api.get<Post>(`/api/community/posts/${postId}`)
             setPost(response.data)
             setComments(response.data.comments || [])
         } catch (err) {
@@ -35,9 +39,10 @@ export default function PostDetailPage() {
 
     useEffect(() => {
         fetchPostDetails()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [postId])
 
-    const handleCommentAdded = (newComment: any) => {
+    const handleCommentAdded = (newComment: Comment) => {
         setComments((prevComments) => [...prevComments, newComment])
         // Also update the comment count on the post object
         if (post) {

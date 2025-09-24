@@ -1,10 +1,13 @@
 "use client"
 
 // --- FIX: Defined props interface ---
+interface WeatherData { temperature?: number; humidity?: number; wind_speed?: number; [k: string]: unknown }
+interface CurrentData { aqi?: number; level?: string; pollutant?: string; weather?: WeatherData }
+interface ForecastData { current?: CurrentData }
 interface MainAqiDisplayProps {
     loading: boolean
     error: string | null
-    forecast: any
+    forecast: ForecastData | null
     locationName: string
 }
 
@@ -71,11 +74,11 @@ export default function MainAqiDisplay({ loading, error, forecast, locationName 
             <h2 className="text-lg font-medium text-gray-400 truncate" title={locationName}>
                 {locationName}
             </h2>
-            <p className={`text-7xl font-bold mt-2 ${getAqiColor(level)}`}>{aqi || "N/A"}</p>
-            <p className={`text-2xl font-semibold ${getAqiColor(level)}`}>
+            <p className={`text-7xl font-bold mt-2 ${getAqiColor(level || "")}`}>{aqi || "N/A"}</p>
+            <p className={`text-2xl font-semibold ${getAqiColor(level || "")}`}>
                 {level || "Unknown"} {pollutant ? `(${pollutant})` : ""}
             </p>
-            <p className="text-gray-300 mt-4 text-sm">{getAqiAdvice(level)}</p>
+            <p className="text-gray-300 mt-4 text-sm">{getAqiAdvice(level || "")}</p>
         </div>
     )
 }

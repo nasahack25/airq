@@ -2,6 +2,7 @@
 
 import ScrollReveal from "@/components/ui/ScrollReveal"
 import AdvectionAnimation from "@/components/ui/AdvectionAnimation"
+import Link from "next/link"
 
 export default function AboutPage() {
     const dataSources = [
@@ -111,7 +112,7 @@ export default function AboutPage() {
                             <div className="glass-dark p-8 rounded-2xl border border-border/20">
                                 <p className="text-lg text-card-foreground leading-relaxed text-center">
                                     We create a digital grid representing the area around you, place the current pollution level at its
-                                    center, then use real wind data to mathematically 'push' that plume across the grid, hour by hour. The
+                                    center, then use real wind data to mathematically &apos;push&apos; that plume across the grid, hour by hour. The
                                     result is our highly accurate forecast that helps you plan your day with confidence.
                                 </p>
                             </div>
@@ -261,7 +262,7 @@ export default function AboutPage() {
                             See our advanced air quality modeling in action with real-time data and predictions.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <a
+                            <Link
                                 href="/dashboard"
                                 className="inline-flex items-center px-8 py-4 text-lg font-semibold text-primary-foreground bg-gradient-to-r from-primary to-accent rounded-full hover:scale-105 hover:shadow-xl hover:shadow-primary/25 transition-all duration-300"
                             >
@@ -269,13 +270,13 @@ export default function AboutPage() {
                                 <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                 </svg>
-                            </a>
-                            <a
+                            </Link>
+                            <Link
                                 href="/"
                                 className="inline-flex items-center px-8 py-4 text-lg font-semibold text-foreground bg-card/50 border border-border/20 rounded-full hover:bg-card/70 hover:border-primary/30 transition-all duration-300"
                             >
                                 Learn More
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </section>

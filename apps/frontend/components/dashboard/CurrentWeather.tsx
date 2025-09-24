@@ -3,12 +3,12 @@
 // --- FIX: Defined props interface ---
 interface CurrentWeatherProps {
     weather:
-    | {
-        wind_speed: number
-        wind_direction: number
-        humidity: number
-    }
-    | undefined
+        | {
+              wind_speed?: number
+              wind_direction?: number
+              humidity?: number
+          }
+        | undefined
 }
 
 const WeatherIcon = ({ code }: { code: number }) => {
@@ -46,7 +46,7 @@ export default function CurrentWeather({ weather }: CurrentWeatherProps) {
                 </svg>
                 Environmental Factors
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-4" aria-label="Environmental Factors">
                 <div className="flex justify-between items-center p-4 bg-card/30 rounded-lg border border-border/10 hover:bg-card/40 transition-colors duration-200">
                     <span className="text-muted-foreground font-medium">Wind Speed</span>
                     <div className="flex items-center gap-2">

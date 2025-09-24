@@ -10,7 +10,8 @@ interface LocationSearchProps {
 
 export default function LocationSearch({ onLocationSelect }: LocationSearchProps) {
   const [query, setQuery] = useState("")
-  const [suggestions, setSuggestions] = useState<any[]>([])
+  type GeoResult = { formatted: string; geometry: { lat: number; lng: number }; annotations?: { geohash?: string } }
+  const [suggestions, setSuggestions] = useState<GeoResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [debouncedQuery] = useDebounce(query, 500) // 500ms delay
 
@@ -20,7 +21,7 @@ export default function LocationSearch({ onLocationSelect }: LocationSearchProps
         setIsLoading(true)
         try {
           const results = await searchLocations(debouncedQuery)
-          setSuggestions(results)
+          setSuggestions(results as GeoResult[])
         } catch (error) {
           console.error("Error fetching suggestions:", error)
           setSuggestions([])
@@ -36,7 +37,7 @@ export default function LocationSearch({ onLocationSelect }: LocationSearchProps
     fetchSuggestions()
   }, [debouncedQuery])
 
-  const handleSelect = (result: any) => {
+  const handleSelect = (result: GeoResult) => {
     onLocationSelect(result.geometry.lat, result.geometry.lng, result.formatted)
     setQuery(result.formatted)
     setSuggestions([])

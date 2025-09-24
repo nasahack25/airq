@@ -19,7 +19,10 @@ export default function DashboardPage() {
     const [debouncedMapCenter] = useDebounce(mapCenter, 500)
 
     const [loading, setLoading] = useState<boolean>(true)
-    const [forecast, setForecast] = useState<any>(null)
+    interface WeatherData { temperature?: number; humidity?: number; wind_speed?: number; [key: string]: unknown }
+    interface CurrentData { aqi?: number; level?: string; pollutant?: string; weather?: WeatherData; city_name?: string }
+    interface ForecastResponse { current?: CurrentData; hourly_forecast?: Array<{ hour: string; aqi: number }>; [key: string]: unknown }
+    const [forecast, setForecast] = useState<ForecastResponse | null>(null)
     const [error, setError] = useState<string | null>(null)
 
     const MapView = useMemo(
@@ -51,14 +54,15 @@ export default function DashboardPage() {
         setLoading(true)
         setError(null)
         try {
-            const response = await axios.get(`http://localhost:3001/api/forecast?lat=${lat}&lon=${lon}`)
+            const response = await axios.get<ForecastResponse>(`http://localhost:3001/api/forecast?lat=${lat}&lon=${lon}`)
             setForecast(response.data)
             if (response.data.current?.city_name) {
                 setLocationName(response.data.current.city_name)
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const anyErr = err as { response?: { data?: { detail?: string; error?: string; message?: string } }; message?: string }
             setError(
-                err.response?.data?.detail || err.response?.data?.error || err.message || "An unexpected error occurred.",
+                anyErr.response?.data?.detail || anyErr.response?.data?.error || anyErr.message || "An unexpected error occurred.",
             )
             setForecast(null)
         } finally {
@@ -66,7 +70,7 @@ export default function DashboardPage() {
         }
     }, [])
 
-    // Effect for initial geolocation
+    // Effect for initial geolocation (run once)
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -145,7 +149,13 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Hourly Forecast */}
-                        <AnimatedHourlyForecast forecast={forecast?.hourly_forecast} />
+                        <AnimatedHourlyForecast
+                            forecast={forecast?.hourly_forecast?.map((h: { hour: string; aqi: number; weather_code?: number }) => ({
+                                time: h.hour,
+                                aqi: h.aqi,
+                                weather_code: h.weather_code ?? 0,
+                            }))}
+                        />
                     </div>
                 </div>
 

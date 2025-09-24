@@ -9,16 +9,31 @@ import CreatePost from "@/components/community/CreatePost"
 import PostCard from "@/components/community/PostCard"
 import { PostSkeleton } from "@/components/community/SkeletonLoader"
 
+interface Author {
+    id: string
+    username: string
+    avatar?: string
+}
+
+interface Post {
+    id: string
+    content: string
+    imageUrl?: string
+    createdAt: string
+    author: Author
+    _count: { likes: number; comments: number }
+}
+
 export default function CommunityPage() {
     const { isAuthenticated, loading: authLoading } = useAuth()
     const router = useRouter()
-    const [posts, setPosts] = useState([])
+    const [posts, setPosts] = useState<Post[]>([])
     const [loadingPosts, setLoadingPosts] = useState(true)
 
     const fetchPosts = async () => {
         setLoadingPosts(true)
         try {
-            const response = await api.get("/api/community/posts")
+            const response = await api.get<Post[]>("/api/community/posts")
             setPosts(response.data)
         } catch (error) {
             console.error("Failed to fetch posts:", error)
@@ -108,7 +123,7 @@ export default function CommunityPage() {
                             <PostSkeleton />
                         </>
                     ) : posts.length > 0 ? (
-                        posts.map((post: any, index) => (
+                    posts.map((post: Post, index) => (
                             <div key={post.id} style={{ animationDelay: `${index * 100}ms` }}>
                                 <PostCard post={post} />
                             </div>

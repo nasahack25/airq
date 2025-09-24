@@ -39,8 +39,9 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
             setContent("")
             setImage(null)
             onPostCreated() // Refresh the feed
-        } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to create post.")
+        } catch (err: unknown) {
+            const anyErr = err as { response?: { data?: { message?: string } } }
+            setError(anyErr.response?.data?.message || "Failed to create post.")
         } finally {
             setLoading(false)
         }
