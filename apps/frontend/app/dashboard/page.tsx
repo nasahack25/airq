@@ -54,7 +54,7 @@ export default function DashboardPage() {
         setLoading(true)
         setError(null)
         try {
-            const response = await axios.get<ForecastResponse>(`http://localhost:3001/api/forecast?lat=${lat}&lon=${lon}`)
+            const response = await axios.get<ForecastResponse>(`${process.env.NEXT_PUBLIC_API_URL}/api/forecast?lat=${lat}&lon=${lon}`)
             setForecast(response.data)
             if (response.data.current?.city_name) {
                 setLocationName(response.data.current.city_name)

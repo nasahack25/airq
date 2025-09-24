@@ -43,7 +43,7 @@ export default function AuthForm({ type }: AuthFormProps) {
 
     const handleGoogleSignIn = () => {
         // Redirect the user to the backend's Google OAuth endpoint
-        window.location.href = 'http://localhost:3001/auth/google';
+        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
     };
 
     return (
