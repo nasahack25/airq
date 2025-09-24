@@ -46,15 +46,15 @@ export default function AuthForm({ type }: AuthFormProps) {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-900">
-            <div className="w-full max-w-md p-8 space-y-8 bg-gray-800 rounded-lg shadow-lg">
+        <div className="flex items-center justify-center min-h-screen bg-cyan-100">
+            <div className="w-full max-w-md p-8 space-y-8 bg-black rounded-lg shadow-lg">
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-white">{type === 'login' ? 'Welcome Back!' : 'Create an Account'}</h1>
                     <p className="mt-2 text-gray-400">
                         {type === 'login'
                             ? "Don't have an account? "
                             : 'Already have an account? '}
-                        <Link href={type === 'login' ? '/signup' : '/login'} className="font-medium text-blue-400 hover:text-blue-300">
+                        <Link href={type === 'login' ? '/signup' : '/signin'} className="font-medium text-blue-400 hover:text-blue-300">
                             {type === 'login' ? 'Sign up' : 'Log in'}
                         </Link>
                     </p>
