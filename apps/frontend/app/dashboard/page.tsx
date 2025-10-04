@@ -11,6 +11,7 @@ import AnimatedAqiGauge from "@/components/dashboard/AnimatedAqiGauge"
 import CurrentWeather from "@/components/dashboard/CurrentWeather"
 import AnimatedMainAqiDisplay from "@/components/dashboard/AnimatedMainAqi"
 import AnimatedHourlyForecast from "@/components/dashboard/AnimatedHourly"
+import Chatbot from "@/components/chatbot/Chatbot"
 
 export default function DashboardPage() {
     // State management
@@ -19,9 +20,9 @@ export default function DashboardPage() {
     const [debouncedMapCenter] = useDebounce(mapCenter, 500)
 
     const [loading, setLoading] = useState<boolean>(true)
-    interface WeatherData { temperature?: number; humidity?: number; wind_speed?: number; [key: string]: unknown }
+    interface WeatherData { temperature?: number; humidity?: number; wind_speed?: number;[key: string]: unknown }
     interface CurrentData { aqi?: number; level?: string; pollutant?: string; weather?: WeatherData; city_name?: string }
-    interface ForecastResponse { current?: CurrentData; hourly_forecast?: Array<{ hour: string; aqi: number }>; [key: string]: unknown }
+    interface ForecastResponse { current?: CurrentData; hourly_forecast?: Array<{ hour: string; aqi: number }>;[key: string]: unknown }
     const [forecast, setForecast] = useState<ForecastResponse | null>(null)
     const [error, setError] = useState<string | null>(null)
 
@@ -202,6 +203,10 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
+
+            <Chatbot forecastData={forecast} />
+
         </div>
     )
 }
+
